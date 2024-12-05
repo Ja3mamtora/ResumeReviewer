@@ -66,55 +66,79 @@ export default function Dashboard() {
     }
   };
 
-  const parseReviewData = (data) => {
-    const lines = data.split('\n');
-    const result = {
-      score: 0,
-      strongParts: [],
-      weakParts: [],
-      improvements: [],
-      suitableRoles: [],
-      usefulLinks: []
-    };
-
-    let currentSection = '';
-
-    lines.forEach(line => {
-      if (line.startsWith('Resume score:')) {
-        result.score = parseInt(line.split(':')[1].trim());
-      } else if (line.startsWith('Strong parts of the resume:')) {
-        currentSection = 'strong';
-      } else if (line.startsWith('Weak parts of the resume:')) {
-        currentSection = 'weak';
-      } else if (line.startsWith('Scope of improvements:')) {
-        currentSection = 'improvements';
-      } else if (line.startsWith('Resume is best suited for the following roles:')) {
-        currentSection = 'roles';
-      } else if (line.startsWith('Useful links:')) {
-        currentSection = 'links';
-      } else if (line.trim().startsWith('1.') || line.trim().startsWith('2.') || line.trim().startsWith('3.') || line.trim().startsWith('4.')) {
-        switch (currentSection) {
-          case 'strong':
-            result.strongParts.push(line.trim().substring(3));
-            break;
-          case 'weak':
-            result.weakParts.push(line.trim().substring(3));
-            break;
-          case 'improvements':
-            result.improvements.push(line.trim().substring(3));
-            break;
-          case 'roles':
-            result.suitableRoles.push(line.trim().substring(3));
-            break;
-          case 'links':
-            result.usefulLinks.push(line.trim().substring(3));
-            break;
-        }
-      }
-    });
-
-    return result;
+const parseReviewData = (data) => {
+  const lines = data.split('\n');
+  const result = {
+    score: 0,
+    strongParts: [],
+    weakParts: [],
+    improvements: [],
+    suitableRoles: [],
+    usefulLinks: [],
   };
+
+  let currentSection = '';
+
+  // Helper function to clean the content
+  const cleanContent = (content) => content.replace(/\*\*/g, '').trim();
+
+  lines.forEach((line) => {
+    const cleanedLine = cleanContent(line); // Clean the line to remove '**'
+
+    if (cleanedLine.startsWith('Resume score:')) {
+      result.score = parseInt(cleanedLine.split(':')[1].trim());
+    } else if (cleanedLine.startsWith('Strong parts of the resume:')) {
+      currentSection = 'strong';
+    } else if (cleanedLine.startsWith('Weak parts of the resume:')) {
+      currentSection = 'weak';
+    } else if (cleanedLine.startsWith('Scope of improvements:')) {
+      currentSection = 'improvements';
+    } else if (cleanedLine.startsWith('Resume is best suited for the following roles:')) {
+      currentSection = 'roles';
+    } else if (cleanedLine.startsWith('Useful links:')) {
+      currentSection = 'links';
+    } else if (
+      cleanedLine.trim().startsWith('1.') ||
+      cleanedLine.trim().startsWith('2.') ||
+      cleanedLine.trim().startsWith('3.') ||
+      cleanedLine.trim().startsWith('4.')
+    ) {
+      const content = cleanContent(cleanedLine.substring(3)); // Clean and remove numbering
+      switch (currentSection) {
+        case 'strong':
+        case 'weak':
+          const [boldPart, ...rest] = content.split(':');
+          const formattedContent =
+            rest.length > 0
+              ? (
+                <>
+                  <strong>{boldPart}:</strong>
+                  {rest.join(':')}
+                </>
+              )
+              : content;
+          if (currentSection === 'strong') {
+            result.strongParts.push(formattedContent);
+          } else {
+            result.weakParts.push(formattedContent);
+          }
+          break;
+        case 'improvements':
+          result.improvements.push(content);
+          break;
+        case 'roles':
+          result.suitableRoles.push(content);
+          break;
+        case 'links':
+          result.usefulLinks.push(content);
+          break;
+      }
+    }
+  });
+
+  return result;
+};
+
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -191,7 +215,7 @@ export default function Dashboard() {
                   <Star className="h-8 w-8 text-yellow-400 mr-2" />
                   <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
@@ -204,7 +228,7 @@ export default function Dashboard() {
                       ))}
                     </ul>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                       <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
@@ -217,7 +241,7 @@ export default function Dashboard() {
                     </ul>
                   </div>
                 </div>
-                
+
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                     <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
@@ -229,7 +253,7 @@ export default function Dashboard() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                     <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
@@ -241,7 +265,7 @@ export default function Dashboard() {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
                     <Link className="h-5 w-5 text-indigo-500 mr-2" />
