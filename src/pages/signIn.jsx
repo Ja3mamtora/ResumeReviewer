@@ -3,11 +3,11 @@ import { useNavigate, Navigate } from 'react-router-dom';
 import { AuthContext } from '../context/authContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Mail, Lock, Eye, EyeOff, FileText, ArrowRight } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, FileText, ArrowRight } from 'lucide-react';
 
 export default function SignIn() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [signInError, setSignInError] = useState(null);
@@ -17,16 +17,21 @@ export default function SignIn() {
     event.preventDefault();
     setSignInError(null);
     try {
-      const response = await fetch('https://resumereviewer.example.com/api/v1/user/login', {
+      const formData = new URLSearchParams();
+      formData.append('username', username);
+      formData.append('password', password);
+
+      const response = await fetch('https://adaptive-learning-v1.onrender.com/authentication/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: JSON.stringify({ email, password }),
+        body: formData.toString(),
       });
+
       const data = await response.json();
-      if (data && data.token) {
-        login(data.token);
+      if (data && data.access_token) {
+        login(data.access_token);
         toast.success('Signed in successfully!');
         setTimeout(() => {
           navigate('/dashboard');
@@ -46,7 +51,7 @@ export default function SignIn() {
 
   useEffect(() => {
     toast.info('Welcome to Resume Reviewer!', {
-      position: "top-right",
+      position: 'top-right',
       autoClose: 1500,
       hideProgressBar: false,
       closeOnClick: true,
@@ -61,9 +66,13 @@ export default function SignIn() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-cover bg-center" style={{
-      backgroundImage: "url('https://images.unsplash.com/photo-1602407294553-6ac9170b3ed0?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHJlc3VtZXxlbnwwfHwwfHx8Mg%3D%3D')"
-    }}>
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{
+        backgroundImage:
+          "url('https://images.unsplash.com/photo-1602407294553-6ac9170b3ed0?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTB8fHJlc3VtZXxlbnwwfHwwfHx8Mg%3D%3D')",
+      }}
+    >
       <div className="bg-white bg-opacity-95 p-8 rounded-lg shadow-xl max-w-md w-full">
         <div className="flex flex-col items-center justify-center mb-6">
           <div className="bg-blue-100 p-3 rounded-full mb-4">
@@ -74,30 +83,34 @@ export default function SignIn() {
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email Address</label>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700">
+              Username
+            </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Mail className="h-5 w-5 text-gray-400" />
+                <User className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type="email"
-                id="email"
+                type="text"
+                id="username"
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Your username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 required
               />
             </div>
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
             <div className="mt-1 relative rounded-md shadow-sm">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
               </div>
               <input
-                type={showPassword ? "text" : "password"}
+                type={showPassword ? 'text' : 'password'}
                 id="password"
                 className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                 placeholder="••••••••"
@@ -118,8 +131,6 @@ export default function SignIn() {
               </button>
             </div>
           </div>
-          <div className="flex items-center justify-between">
-          </div>
           <button
             type="submit"
             className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
@@ -129,7 +140,10 @@ export default function SignIn() {
           </button>
         </form>
         {signInError && (
-          <div className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            className="mt-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             <span className="block sm:inline">{signInError}</span>
           </div>
         )}
@@ -154,4 +168,3 @@ export default function SignIn() {
     </div>
   );
 }
-

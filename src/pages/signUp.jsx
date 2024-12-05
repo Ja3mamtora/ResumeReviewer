@@ -42,7 +42,7 @@ export default function SignUp() {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch('https://resumereviewer.example.com/api/v1/user/register', {
+      const response = await fetch('https://adaptive-learning-v1.onrender.com/authentication/signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -50,8 +50,7 @@ export default function SignUp() {
         body: JSON.stringify({ 
           email, 
           password,
-          first_name: firstName,
-          last_name: lastName 
+          user_name: firstName+lastName,
         }),
       });
       
