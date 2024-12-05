@@ -209,76 +209,81 @@ const parseReviewData = (data) => {
           )}
           {reviewData && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Review Results</h2>
-                <div className="flex items-center mb-6">
-                  <Star className="h-8 w-8 text-yellow-400 mr-2" />
-                  <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                      <ThumbsUp className="h-5 w-5 text-green-500 mr-2" />
-                      Strong Points
-                    </h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {reviewData.strongParts.map((point, index) => (
-                        <li key={index} className="text-gray-700">{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                      <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
-                      Areas for Improvement
-                    </h3>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {reviewData.weakParts.map((point, index) => (
-                        <li key={index} className="text-gray-700">{point}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-6">
+            <div className="p-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Review Results</h2>
+              <div className="flex items-center mb-6">
+                <Star className="h-8 w-8 text-yellow-400 mr-2" />
+                <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
+              </div>
+          
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                {/* Strong Points */}
+                <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
-                    Suggested Improvements
+                    <ThumbsUp className="h-5 w-5 text-green-500 mr-2" />
+                    Strong Points
                   </h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewData.improvements.map((improvement, index) => (
-                      <li key={index} className="text-gray-700">{improvement}</li>
+                    {reviewData.strongParts.map((point, index) => (
+                      <li key={index} className="text-gray-700">{point}</li>
                     ))}
                   </ul>
                 </div>
-
-                <div className="mt-6">
+          
+                {/* Areas for Improvement */}
+                <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
-                    Suitable Roles
+                    <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
+                    Areas for Improvement
                   </h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewData.suitableRoles.map((role, index) => (
-                      <li key={index} className="text-gray-700">{role}</li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="mt-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <Link className="h-5 w-5 text-indigo-500 mr-2" />
-                    Useful Resources
-                  </h3>
-                  <ul className="list-disc pl-5 space-y-1">
-                    {reviewData.usefulLinks.map((link, index) => (
-                      <li key={index} className="text-gray-700">{link}</li>
+                    {reviewData.weakParts.map((point, index) => (
+                      <li key={index} className="text-gray-700">{point}</li>
                     ))}
                   </ul>
                 </div>
               </div>
+          
+              {/* Suggested Improvements */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                  <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+                  Suggested Improvements
+                </h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {reviewData.improvements.map((improvement, index) => (
+                    <li key={index} className="text-gray-700">{improvement}</li>
+                  ))}
+                </ul>
+              </div>
+          
+              {/* Suitable Roles */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                  <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
+                  Suitable Roles
+                </h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {reviewData.suitableRoles.map((role, index) => (
+                    <li key={index} className="text-gray-700">{role}</li>
+                  ))}
+                </ul>
+              </div>
+          
+              {/* Useful Resources */}
+              <div className="mt-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                  <Link className="h-5 w-5 text-indigo-500 mr-2" />
+                  Useful Resources
+                </h3>
+                <ul className="list-disc pl-5 space-y-1">
+                  {reviewData.usefulLinks.map((link, index) => (
+                    <li key={index} className="text-gray-700">{link}</li>
+                  ))}
+                </ul>
+              </div>
             </div>
+          </div>          
           )}
         </div>
       </main>
