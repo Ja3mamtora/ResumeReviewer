@@ -95,7 +95,6 @@ export default function Dashboard() {
       }
     });
 
-    // Push the last category if exists
     if (currentCategory && currentFeedback.length > 0) {
       result.push({
         category: currentCategory,
@@ -194,10 +193,10 @@ export default function Dashboard() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Category
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Feedback
                     </th>
                   </tr>
@@ -212,12 +211,12 @@ export default function Dashboard() {
                         {item.feedback.split('\n').map((line, i) => (
                           <React.Fragment key={i}>
                             {line.startsWith('•') ? (
-                              <div className="flex items-start">
+                              <div className="flex items-start mb-1">
                                 <span className="mr-2">•</span>
                                 <span>{line.substring(1).trim()}</span>
                               </div>
                             ) : (
-                              <div>{line}</div>
+                              <div className="mb-1">{line}</div>
                             )}
                           </React.Fragment>
                         ))}
