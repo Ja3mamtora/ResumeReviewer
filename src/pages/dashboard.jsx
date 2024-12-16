@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight, Star, ThumbsUp, ThumbsDown, TrendingUp, Briefcase, LinkIcon } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight, Star, ThumbsUp, ThumbsDown, TrendingUp, Briefcase, Link } from 'lucide-react';
 
 export default function Dashboard() {
   const [file, setFile] = useState(null);
@@ -75,7 +75,6 @@ export default function Dashboard() {
       improvements: [],
       suitableRoles: [],
       usefulLinks: [],
-      additionalInstructions: '',
     };
 
     let currentSection = '';
@@ -97,16 +96,31 @@ export default function Dashboard() {
         currentSection = 'roles';
       } else if (cleanedLine.startsWith('Useful links:')) {
         currentSection = 'links';
-      } else if (cleanedLine.startsWith('Additional Instructions:')) {
-        currentSection = 'additional';
-      } else if (cleanedLine.trim().startsWith('•')) {
-        const content = cleanContent(cleanedLine.substring(1));
+      } else if (
+        cleanedLine.trim().startsWith('1.') ||
+        cleanedLine.trim().startsWith('2.') ||
+        cleanedLine.trim().startsWith('3.') ||
+        cleanedLine.trim().startsWith('4.')
+      ) {
+        const content = cleanContent(cleanedLine.substring(3));
         switch (currentSection) {
           case 'strong':
-            result.strongParts.push(content);
-            break;
           case 'weak':
-            result.weakParts.push(content);
+            const [boldPart, ...rest] = content.split(':');
+            const formattedContent =
+              rest.length > 0
+                ? (
+                  <>
+                    <strong>{boldPart}:</strong>
+                    {rest.join(':')}
+                  </>
+                )
+                : content;
+            if (currentSection === 'strong') {
+              result.strongParts.push(formattedContent);
+            } else {
+              result.weakParts.push(formattedContent);
+            }
             break;
           case 'improvements':
             result.improvements.push(content);
@@ -117,9 +131,6 @@ export default function Dashboard() {
           case 'links':
             result.usefulLinks.push(content);
             break;
-          case 'additional':
-            result.additionalInstructions += content + ' ';
-            break;
         }
       }
     });
@@ -127,73 +138,38 @@ export default function Dashboard() {
     return result;
   };
 
-  const FeedbackSection = ({ title, items, icon: Icon, color }) => (
-    <div className="mb-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-        <Icon className={`h-5 w-5 ${color} mr-2`} />
-        {title}
-      </h3>
-      <ul className="list-disc pl-5 space-y-2">
-        {items.map((item, index) => (
-          <li key={index} className="text-gray-700">{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
-          <h1 className="text-2xl font-bold text-gray-900">Resume Reviewer</h1>
+    <div className="min-h-screen bg-gray-100">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+          <h1 className="text-3xl font-bold text-gray-900">Resume Reviewer</h1>
         </div>
       </header>
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow-lg rounded-lg overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Upload Your Resume</h2>
-              <div className="mb-6">
-                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
-                  <div className="space-y-1 text-center">
-                    <svg
-                      className="mx-auto h-12 w-12 text-gray-400"
-                      stroke="currentColor"
-                      fill="none"
-                      viewBox="0 0 48 48"
-                      aria-hidden="true"
-                    >
-                      <path
-                        d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                        strokeWidth={2}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                    <div className="flex text-sm text-gray-600">
-                      <label
-                        htmlFor="file-upload"
-                        className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-                      >
-                        <span>Upload a file</span>
-                        <input id="file-upload" name="file-upload" type="file" className="sr-only" onChange={handleFileChange} accept=".pdf" />
-                      </label>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PDF up to 10MB</p>
-                  </div>
+          <div className="border-4 border-dashed border-gray-200 rounded-lg p-8 bg-white mb-8">
+            {!file ? (
+              <div className="text-center">
+                <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                <h2 className="mt-2 text-lg font-medium text-gray-900">Upload your resume</h2>
+                <p className="mt-1 text-sm text-gray-500">PDF up to 10MB</p>
+                <div className="mt-6">
+                  <label htmlFor="file-upload" className="cursor-pointer bg-blue-600 hover:bg-blue-700 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 inline-flex items-center">
+                    <Upload className="mr-2 h-5 w-5" />
+                    Select PDF
+                    <input id="file-upload" name="file-upload" type="file" accept=".pdf" className="sr-only" onChange={handleFileChange} />
+                  </label>
                 </div>
               </div>
-              {file && (
-                <div className="flex items-center justify-between bg-gray-50 px-4 py-3 rounded-md">
-                  <div className="flex items-center">
-                    <FileText className="h-5 w-5 text-gray-400 mr-2" />
-                    <span className="text-sm font-medium text-gray-900">{fileName}</span>
-                  </div>
+            ) : (
+              <div className="text-center">
+                <FileText className="mx-auto h-12 w-12 text-blue-600" />
+                <h2 className="mt-2 text-lg font-medium text-gray-900">{fileName}</h2>
+                <div className="mt-6">
                   <button
                     onClick={handleUpload}
                     disabled={isUploading}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-blue-600 hover:bg-blue-700 py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
                   >
                     {isUploading ? (
                       <>
@@ -208,93 +184,99 @@ export default function Dashboard() {
                     )}
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
-
           {uploadStatus && (
-            <div className={`mt-6 p-4 rounded-md ${
-              uploadStatus === 'completed' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            <div className={`mb-8 p-4 rounded-md ${
+              uploadStatus === 'completed' ? 'bg-green-100' : 'bg-red-100'
             }`}>
-              {uploadStatus === 'completed' ? (
+              {uploadStatus === 'completed' && (
                 <div className="flex items-center">
                   <CheckCircle className="h-5 w-5 text-green-400 mr-2" />
-                  <span>Your resume has been successfully reviewed!</span>
+                  <span className="text-green-700">Your resume has been successfully reviewed!</span>
                 </div>
-              ) : (
+              )}
+              {uploadStatus === 'error' && (
                 <div className="flex items-center">
                   <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
-                  <span>An error occurred while reviewing. Please try again.</span>
+                  <span className="text-red-700">An error occurred while reviewing. Please try again.</span>
                 </div>
               )}
             </div>
           )}
-
           {reviewData && (
-            <div className="mt-8 bg-white shadow-lg rounded-lg overflow-hidden">
+            <div className="bg-white shadow rounded-lg overflow-hidden">
               <div className="p-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">Resume Review Results</h2>
-                <div className="flex items-center justify-center mb-8">
-                  <div className="text-center">
-                    <div className="text-5xl font-bold text-indigo-600">{reviewData.score}</div>
-                    <div className="mt-2 text-sm font-medium text-gray-500">Resume Score</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Review Results</h2>
+                <div className="flex items-center mb-6">
+                  <Star className="h-8 w-8 text-yellow-400 mr-2" />
+                  <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
+                </div>
+            
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                      <ThumbsUp className="h-5 w-5 text-green-500 mr-2" />
+                      Strong Points
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {reviewData.strongParts.map((point, index) => (
+                        <li key={index} className="text-gray-700">{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+            
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                      <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
+                      Areas for Improvement
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {reviewData.weakParts.map((point, index) => (
+                        <li key={index} className="text-gray-700">{point}</li>
+                      ))}
+                    </ul>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FeedbackSection
-                    title="Strong Points"
-                    items={reviewData.strongParts}
-                    icon={ThumbsUp}
-                    color="text-green-500"
-                  />
-                  <FeedbackSection
-                    title="Areas for Improvement"
-                    items={reviewData.weakParts}
-                    icon={ThumbsDown}
-                    color="text-red-500"
-                  />
-                </div>
-                
-                <FeedbackSection
-                  title="Suggested Improvements"
-                  items={reviewData.improvements}
-                  icon={TrendingUp}
-                  color="text-blue-500"
-                />
-                
-                <FeedbackSection
-                  title="Suitable Roles"
-                  items={reviewData.suitableRoles}
-                  icon={Briefcase}
-                  color="text-purple-500"
-                />
-                
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
-                    <LinkIcon className="h-5 w-5 text-indigo-500 mr-2" />
-                    Useful Resources
+            
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+                    Suggested Improvements
                   </h3>
-                  <ul className="space-y-2">
-                    {reviewData.usefulLinks.map((link, index) => (
-                      <li key={index} className="text-indigo-600 hover:text-indigo-800">
-                        <a href={link.split(' ')[0]} target="_blank" rel="noopener noreferrer" className="flex items-center">
-                          <LinkIcon className="h-4 w-4 mr-2" />
-                          {link}
-                        </a>
-                      </li>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reviewData.improvements.map((improvement, index) => (
+                      <li key={index} className="text-gray-700">{improvement}</li>
                     ))}
                   </ul>
                 </div>
-                
-                {reviewData.additionalInstructions && (
-                  <div className="mt-6 p-4 bg-yellow-50 rounded-md">
-                    <h3 className="text-lg font-semibold text-yellow-800 mb-2">Additional Instructions</h3>
-                    <p className="text-yellow-700">{reviewData.additionalInstructions}</p>
-                  </div>
-                )}
+            
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
+                    Suitable Roles
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reviewData.suitableRoles.map((role, index) => (
+                      <li key={index} className="text-gray-700">{role}</li>
+                    ))}
+                  </ul>
+                </div>
+            
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <Link className="h-5 w-5 text-indigo-500 mr-2" />
+                    Useful Resources
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reviewData.usefulLinks.map((link, index) => (
+                      <li key={index} className="text-gray-700">{link}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
-            </div>
+            </div>          
           )}
         </div>
       </main>
