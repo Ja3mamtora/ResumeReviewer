@@ -68,37 +68,58 @@ export default function Dashboard() {
 
   const parseReviewData = (data) => {
     const lines = data.split('\n');
-    const result = [];
-    let currentCategory = '';
-    let currentFeedback = [];
+    const result = {
+      score: 0,
+      strongParts: [],
+      weakParts: [],
+      improvements: [],
+      suitableRoles: [],
+      usefulLinks: [],
+    };
+
+    let currentSection = '';
+    const cleanContent = (content) => content.replace(/\*\*/g, '').trim();
 
     lines.forEach((line) => {
-      if (line.startsWith('----------------------------------------------------------------------------------------------------------')) {
-        if (currentCategory && currentFeedback.length > 0) {
-          result.push({
-            category: currentCategory,
-            feedback: currentFeedback.join('\n')
-          });
-          currentFeedback = [];
+      const cleanedLine = cleanContent(line);
+
+      if (cleanedLine.startsWith('Resume score:')) {
+        result.score = cleanedLine.split(':')[1].trim();
+      } else if (cleanedLine.startsWith('Strong parts of the resume:')) {
+        currentSection = 'strong';
+      } else if (cleanedLine.startsWith('Weak parts of the resume:')) {
+        currentSection = 'weak';
+      } else if (cleanedLine.startsWith('Scope of improvements:')) {
+        currentSection = 'improvements';
+      } else if (cleanedLine.startsWith('Resume is best suited for the following roles:')) {
+        currentSection = 'roles';
+      } else if (cleanedLine.startsWith('Useful links:')) {
+        currentSection = 'links';
+      } else if (
+        cleanedLine.trim().match(/^\d+\./)
+      ) {
+        const content = cleanContent(cleanedLine.replace(/^\d+\.\s*/, ''));
+        switch (currentSection) {
+          case 'strong':
+            result.strongParts.push(content);
+            break;
+          case 'weak':
+            result.weakParts.push(content);
+            break;
+          case 'improvements':
+            result.improvements.push(content);
+            break;
+          case 'roles':
+            result.suitableRoles.push(content);
+            break;
+          case 'links':
+            result.usefulLinks.push(content);
+            break;
+          default:
+            break;
         }
-      } else if (line.includes('|')) {
-        const [category, feedback] = line.split('|').map(item => item.trim());
-        if (category && feedback) {
-          currentCategory = category;
-          currentFeedback.push(feedback);
-        }
-      } else if (line.trim().startsWith('•')) {
-        currentFeedback.push(line.trim());
       }
     });
-
-    // Push the last category if exists
-    if (currentCategory && currentFeedback.length > 0) {
-      result.push({
-        category: currentCategory,
-        feedback: currentFeedback.join('\n')
-      });
-    }
 
     return result;
   };
@@ -188,33 +209,81 @@ export default function Dashboard() {
           )}
           {reviewData && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="table-auto w-full border-collapse border border-gray-300">
+                <thead className="bg-gray-200">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="border border-gray-300 px-4 py-2 text-left text-gray-700 font-bold">
                       Category
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="border border-gray-300 px-4 py-2 text-left text-gray-700 font-bold">
                       Feedback
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {reviewData.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.category}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {item.feedback.split('\n').map((line, i) => (
-                          <React.Fragment key={i}>
-                            {line}
-                            <br />
-                          </React.Fragment>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Resume Score</td>
+                    <td className="border border-gray-300 px-4 py-2">{reviewData.score}</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Strong Points</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <ul className="list-disc ml-5">
+                        {reviewData.strongParts.map((point, index) => (
+                          <li key={`strong-${index}`}>{point}</li>
                         ))}
-                      </td>
-                    </tr>
-                  ))}
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Weak Points</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <ul className="list-disc ml-5">
+                        {reviewData.weakParts.map((point, index) => (
+                          <li key={`weak-${index}`}>{point}</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Areas for Improvement</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <ul className="list-disc ml-5">
+                        {reviewData.improvements.map((point, index) => (
+                          <li key={`improvement-${index}`}>{point}</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Suitable Roles</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <ul className="list-disc ml-5">
+                        {reviewData.suitableRoles.map((role, index) => (
+                          <li key={`role-${index}`}>{role}</li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2">Useful Links</td>
+                    <td className="border border-gray-300 px-4 py-2">
+                      <ul className="list-disc ml-5">
+                        {reviewData.usefulLinks.map((link, index) => (
+                          <li key={`link-${index}`}>
+                            <a
+                              href={link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline"
+                            >
+                              {link}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
@@ -224,4 +293,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
