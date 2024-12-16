@@ -66,79 +66,77 @@ export default function Dashboard() {
     }
   };
 
-const parseReviewData = (data) => {
-  const lines = data.split('\n');
-  const result = {
-    score: 0,
-    strongParts: [],
-    weakParts: [],
-    improvements: [],
-    suitableRoles: [],
-    usefulLinks: [],
-  };
+  const parseReviewData = (data) => {
+    const lines = data.split('\n');
+    const result = {
+      score: 0,
+      strongParts: [],
+      weakParts: [],
+      improvements: [],
+      suitableRoles: [],
+      usefulLinks: [],
+    };
 
-  let currentSection = '';
+    let currentSection = '';
 
-  // Helper function to clean the content
-  const cleanContent = (content) => content.replace(/\*\*/g, '').trim();
+    const cleanContent = (content) => content.replace(/\*\*/g, '').trim();
 
-  lines.forEach((line) => {
-    const cleanedLine = cleanContent(line); // Clean the line to remove '**'
+    lines.forEach((line) => {
+      const cleanedLine = cleanContent(line);
 
-    if (cleanedLine.startsWith('Resume score:')) {
-      result.score = parseInt(cleanedLine.split(':')[1].trim());
-    } else if (cleanedLine.startsWith('Strong parts of the resume:')) {
-      currentSection = 'strong';
-    } else if (cleanedLine.startsWith('Weak parts of the resume:')) {
-      currentSection = 'weak';
-    } else if (cleanedLine.startsWith('Scope of improvements:')) {
-      currentSection = 'improvements';
-    } else if (cleanedLine.startsWith('Resume is best suited for the following roles:')) {
-      currentSection = 'roles';
-    } else if (cleanedLine.startsWith('Useful links:')) {
-      currentSection = 'links';
-    } else if (
-      cleanedLine.trim().startsWith('1.') ||
-      cleanedLine.trim().startsWith('2.') ||
-      cleanedLine.trim().startsWith('3.') ||
-      cleanedLine.trim().startsWith('4.')
-    ) {
-      const content = cleanContent(cleanedLine.substring(3)); // Clean and remove numbering
-      switch (currentSection) {
-        case 'strong':
-        case 'weak':
-          const [boldPart, ...rest] = content.split(':');
-          const formattedContent =
-            rest.length > 0
-              ? (
-                <>
-                  <strong>{boldPart}:</strong>
-                  {rest.join(':')}
-                </>
-              )
-              : content;
-          if (currentSection === 'strong') {
-            result.strongParts.push(formattedContent);
-          } else {
-            result.weakParts.push(formattedContent);
-          }
-          break;
-        case 'improvements':
-          result.improvements.push(content);
-          break;
-        case 'roles':
-          result.suitableRoles.push(content);
-          break;
-        case 'links':
-          result.usefulLinks.push(content);
-          break;
+      if (cleanedLine.startsWith('Resume score:')) {
+        result.score = parseInt(cleanedLine.split(':')[1].trim());
+      } else if (cleanedLine.startsWith('Strong parts of the resume:')) {
+        currentSection = 'strong';
+      } else if (cleanedLine.startsWith('Weak parts of the resume:')) {
+        currentSection = 'weak';
+      } else if (cleanedLine.startsWith('Scope of improvements:')) {
+        currentSection = 'improvements';
+      } else if (cleanedLine.startsWith('Resume is best suited for the following roles:')) {
+        currentSection = 'roles';
+      } else if (cleanedLine.startsWith('Useful links:')) {
+        currentSection = 'links';
+      } else if (
+        cleanedLine.trim().startsWith('1.') ||
+        cleanedLine.trim().startsWith('2.') ||
+        cleanedLine.trim().startsWith('3.') ||
+        cleanedLine.trim().startsWith('4.')
+      ) {
+        const content = cleanContent(cleanedLine.substring(3));
+        switch (currentSection) {
+          case 'strong':
+          case 'weak':
+            const [boldPart, ...rest] = content.split(':');
+            const formattedContent =
+              rest.length > 0
+                ? (
+                  <>
+                    <strong>{boldPart}:</strong>
+                    {rest.join(':')}
+                  </>
+                )
+                : content;
+            if (currentSection === 'strong') {
+              result.strongParts.push(formattedContent);
+            } else {
+              result.weakParts.push(formattedContent);
+            }
+            break;
+          case 'improvements':
+            result.improvements.push(content);
+            break;
+          case 'roles':
+            result.suitableRoles.push(content);
+            break;
+          case 'links':
+            result.usefulLinks.push(content);
+            break;
+        }
       }
-    }
-  });
+    });
 
-  return result;
-};
-
+    return result;
+  };
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -209,81 +207,76 @@ const parseReviewData = (data) => {
           )}
           {reviewData && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
-            <div className="p-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Review Results</h2>
-              <div className="flex items-center mb-6">
-                <Star className="h-8 w-8 text-yellow-400 mr-2" />
-                <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
-              </div>
-          
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                {/* Strong Points */}
-                <div>
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Resume Review Results</h2>
+                <div className="flex items-center mb-6">
+                  <Star className="h-8 w-8 text-yellow-400 mr-2" />
+                  <span className="text-3xl font-bold text-gray-900">{reviewData.score}/100</span>
+                </div>
+            
+                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                      <ThumbsUp className="h-5 w-5 text-green-500 mr-2" />
+                      Strong Points
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {reviewData.strongParts.map((point, index) => (
+                        <li key={index} className="text-gray-700">{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+            
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                      <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
+                      Areas for Improvement
+                    </h3>
+                    <ul className="list-disc pl-5 space-y-1">
+                      {reviewData.weakParts.map((point, index) => (
+                        <li key={index} className="text-gray-700">{point}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+            
+                <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <ThumbsUp className="h-5 w-5 text-green-500 mr-2" />
-                    Strong Points
+                    <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
+                    Suggested Improvements
                   </h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewData.strongParts.map((point, index) => (
-                      <li key={index} className="text-gray-700">{point}</li>
+                    {reviewData.improvements.map((improvement, index) => (
+                      <li key={index} className="text-gray-700">{improvement}</li>
                     ))}
                   </ul>
                 </div>
-          
-                {/* Areas for Improvement */}
-                <div>
+            
+                <div className="mt-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                    <ThumbsDown className="h-5 w-5 text-red-500 mr-2" />
-                    Areas for Improvement
+                    <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
+                    Suitable Roles
                   </h3>
                   <ul className="list-disc pl-5 space-y-1">
-                    {reviewData.weakParts.map((point, index) => (
-                      <li key={index} className="text-gray-700">{point}</li>
+                    {reviewData.suitableRoles.map((role, index) => (
+                      <li key={index} className="text-gray-700">{role}</li>
+                    ))}
+                  </ul>
+                </div>
+            
+                <div className="mt-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
+                    <Link className="h-5 w-5 text-indigo-500 mr-2" />
+                    Useful Resources
+                  </h3>
+                  <ul className="list-disc pl-5 space-y-1">
+                    {reviewData.usefulLinks.map((link, index) => (
+                      <li key={index} className="text-gray-700">{link}</li>
                     ))}
                   </ul>
                 </div>
               </div>
-          
-              {/* Suggested Improvements */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                  <TrendingUp className="h-5 w-5 text-blue-500 mr-2" />
-                  Suggested Improvements
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {reviewData.improvements.map((improvement, index) => (
-                    <li key={index} className="text-gray-700">{improvement}</li>
-                  ))}
-                </ul>
-              </div>
-          
-              {/* Suitable Roles */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                  <Briefcase className="h-5 w-5 text-purple-500 mr-2" />
-                  Suitable Roles
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {reviewData.suitableRoles.map((role, index) => (
-                    <li key={index} className="text-gray-700">{role}</li>
-                  ))}
-                </ul>
-              </div>
-          
-              {/* Useful Resources */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 flex items-center">
-                  <Link className="h-5 w-5 text-indigo-500 mr-2" />
-                  Useful Resources
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {reviewData.usefulLinks.map((link, index) => (
-                    <li key={index} className="text-gray-700">{link}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>          
+            </div>          
           )}
         </div>
       </main>
