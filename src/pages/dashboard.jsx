@@ -171,17 +171,15 @@ export default function ResumeReviewer() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reviewData.split('----------------------------------------------------------------------------------------------------------').map((section, index) => {
-                    if (section.trim()) {
-                      const [category, ...feedbackLines] = section.split('\n').filter(line => line.trim());
-                      const feedback = feedbackLines.join('\n'); // Join multi-line feedback
+                  {reviewData.map((section, index) => {
+                    if (section.category && section.feedback) {
                       return (
                         <tr key={index}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                            {category.trim()}
+                            {section.category}
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-500">
-                            <ReactMarkdown>{feedback}</ReactMarkdown> {/* Render the markdown here */}
+                            <ReactMarkdown>{section.feedback}</ReactMarkdown>
                           </td>
                         </tr>
                       );
