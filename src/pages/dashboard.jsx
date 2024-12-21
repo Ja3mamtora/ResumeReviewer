@@ -53,7 +53,6 @@ export default function ResumeReviewer() {
           }
         );
         const resp = await data.json();
-        console.log(resp);
         setReviewData(parseReviewData(resp.answer));
         setUploadStatus('completed');
       } else {
@@ -71,18 +70,26 @@ export default function ResumeReviewer() {
     const lines = data.split('\n');
     const result = {};
     let currentCategory = '';
+    let currentFeedback = [];
 
     lines.forEach((line) => {
-      if (line.includes('|')) {
-        const [category, feedback] = line.split('|').map(item => item.trim());
+      if (line.startsWith('|') && line.endsWith('|')) {
+        const [category, feedback] = line.split('|').filter(Boolean).map(item => item.trim());
         if (category && feedback) {
-          result[category] = feedback;
+          if (currentCategory) {
+            result[currentCategory] = currentFeedback.join('\n');
+          }
           currentCategory = category;
-        } else if (currentCategory) {
-          result[currentCategory] += '\n' + line.trim();
+          currentFeedback = [feedback];
         }
+      } else if (currentCategory && line.trim() !== '' && !line.startsWith('-')) {
+        currentFeedback.push(line.trim());
       }
     });
+
+    if (currentCategory) {
+      result[currentCategory] = currentFeedback.join('\n');
+    }
 
     return result;
   };
@@ -192,7 +199,11 @@ export default function ResumeReviewer() {
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {feedback.split('\n').map((item, i) => (
                           <p key={i} className="mb-1">
-                            {item}
+                            {item.startsWith('*') ? (
+                              <span className="block ml-4 before:content-['•'] before:mr-2">{item.substring(1).trim()}</span>
+                            ) : (
+                              item
+                            )}
                           </p>
                         ))}
                       </td>
