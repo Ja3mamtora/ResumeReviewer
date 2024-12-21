@@ -92,7 +92,7 @@ export default function Dashboard() {
       }
 
       const data = await reviewResponse.json()
-      const parsedData = parseReviewData(data)
+      const parsedData = parseReviewData(data.answer)
 
       if (parsedData.length === 0) {
         throw new Error('Invalid review data format')
