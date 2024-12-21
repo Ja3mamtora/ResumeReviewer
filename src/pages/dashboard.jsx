@@ -30,7 +30,7 @@ export default function ResumeReviewer() {
     formData.append('file', file);
 
     try {
-      const response = await fetch(
+      const uploadResponse = await fetch(
         'https://adaptive-learning-v1.onrender.com/resume/resume_upload',
         {
           method: 'POST',
@@ -41,25 +41,35 @@ export default function ResumeReviewer() {
         }
       );
 
-      if (response.ok) {
-        const data = await fetch(
-          'https://adaptive-learning-v1.onrender.com/resume/resume_review',
-          {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            body: formData,
-          }
-        );
-        const resp = await data.json();
-        setReviewData(parseReviewData(resp.answer));
-        setUploadStatus('completed');
-      } else {
+      if (!uploadResponse.ok) {
         throw new Error('Upload failed');
       }
+
+      const reviewResponse = await fetch(
+        'https://adaptive-learning-v1.onrender.com/resume/resume_review',
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!reviewResponse.ok) {
+        throw new Error('Review failed');
+      }
+
+      const reviewData = await reviewResponse.json();
+      console.log('API Response:', reviewData); // Debug log
+      
+      const parsedData = parseReviewData(reviewData.answer);
+      console.log('Parsed Data:', parsedData); // Debug log
+      
+      setReviewData(parsedData);
+      setUploadStatus('completed');
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Error:', error);
       setUploadStatus('error');
     } finally {
       setIsUploading(false);
@@ -67,29 +77,37 @@ export default function ResumeReviewer() {
   };
 
   const parseReviewData = (data) => {
-    const lines = data.split('\n');
-    const result = {};
-    let currentCategory = '';
-    let currentFeedback = [];
-
-    lines.forEach((line) => {
-      if (line.startsWith('|') && line.endsWith('|')) {
-        const [category, feedback] = line.split('|').filter(Boolean).map(item => item.trim());
-        if (category && feedback) {
-          if (currentCategory) {
-            result[currentCategory] = currentFeedback.join('\n');
+    // Split the data by the separator line
+    const sections = data.split('----------------------------------------------------------------------------------------------------------');
+    const result = [];
+    
+    // Process each section
+    sections.forEach(section => {
+      // Clean up the section and split by pipe
+      const lines = section.trim().split('\n');
+      
+      lines.forEach(line => {
+        if (line.includes('|')) {
+          const [category, feedback] = line.split('|').map(item => item.trim());
+          if (category && feedback) {
+            // Find existing category or create new one
+            let existingCategory = result.find(item => item.category === category);
+            if (!existingCategory) {
+              existingCategory = { category, feedback: [] };
+              result.push(existingCategory);
+            }
+            
+            // Add feedback if it's not empty
+            if (feedback !== 'Feedback') {
+              existingCategory.feedback.push(feedback);
+            }
           }
-          currentCategory = category;
-          currentFeedback = [feedback];
+        } else if (line.trim().startsWith('*') && result.length > 0) {
+          // Add bullet points to the last category
+          result[result.length - 1].feedback.push(line.trim());
         }
-      } else if (currentCategory && line.trim() !== '' && !line.startsWith('-')) {
-        currentFeedback.push(line.trim());
-      }
+      });
     });
-
-    if (currentCategory) {
-      result[currentCategory] = currentFeedback.join('\n');
-    }
 
     return result;
   };
@@ -177,7 +195,7 @@ export default function ResumeReviewer() {
               )}
             </div>
           )}
-          {reviewData && (
+          {reviewData && reviewData.length > 0 && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
               <table className="w-full border-collapse">
                 <thead>
@@ -191,20 +209,23 @@ export default function ResumeReviewer() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {Object.entries(reviewData).map(([category, feedback], index) => (
+                  {reviewData.map((item, index) => (
                     <tr key={index}>
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                        {category}
+                        {item.category}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {feedback.split('\n').map((item, i) => (
-                          <p key={i} className="mb-1">
-                            {item.startsWith('*') ? (
-                              <span className="block ml-4 before:content-['•'] before:mr-2">{item.substring(1).trim()}</span>
+                        {item.feedback.map((feedbackItem, i) => (
+                          <div key={i} className="mb-2">
+                            {feedbackItem.startsWith('*') ? (
+                              <div className="flex">
+                                <span className="mr-2">•</span>
+                                <span>{feedbackItem.substring(1).trim()}</span>
+                              </div>
                             ) : (
-                              item
+                              feedbackItem
                             )}
-                          </p>
+                          </div>
                         ))}
                       </td>
                     </tr>
@@ -218,3 +239,4 @@ export default function ResumeReviewer() {
     </div>
   );
 }
+
