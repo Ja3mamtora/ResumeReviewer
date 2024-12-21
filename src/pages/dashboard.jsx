@@ -1,5 +1,25 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react'
+
+function ReviewMarkdown({ reviewData }) {
+  const markdownContent = reviewData.map(item => {
+    const feedbackItems = item.feedback.map(point => `  • ${point}`).join('\n')
+    return `| ${item.category} | ${feedbackItems} |`
+  }).join('\n')
+
+  const fullMarkdown = `
+| Category | Feedback |
+|----------|----------|
+${markdownContent}
+  `
+
+  return (
+    <div className="bg-white shadow rounded-md p-6 overflow-x-auto">
+      <ReactMarkdown>{fullMarkdown}</ReactMarkdown>
+    </div>
+  )
+}
 
 export default function Dashboard() {
   const [file, setFile] = useState(null)
@@ -29,6 +49,9 @@ export default function Dashboard() {
         "Strong Parts of the Resume": data.strongParts || [],
         "Weak Parts of the Resume": data.weakParts || [],
         "Scope of Improvements": data.improvements || [],
+        "Resume is Best Suited for Roles": data.suitableRoles || [],
+        "Useful Links": data.usefulLinks || [],
+        "Additional Instructions": [data.additionalInstructions || ""]
       }
 
       return Object.entries(sections).map(([category, feedback]) => ({
@@ -92,8 +115,7 @@ export default function Dashboard() {
       }
 
       const data = await reviewResponse.json()
-      console.log(data.answer);
-      const parsedData = parseReviewData(data.answer)
+      const parsedData = parseReviewData(data)
 
       if (parsedData.length === 0) {
         throw new Error('Invalid review data format')
@@ -201,32 +223,10 @@ export default function Dashboard() {
         )}
 
         {reviewData && reviewData.length > 0 && (
-          <div className="bg-white shadow rounded-md p-6">
-            <table className="w-full table-auto border-collapse">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left p-2 font-bold text-gray-800">Category</th>
-                  <th className="text-left p-2 font-bold text-gray-800">Feedback</th>
-                </tr>
-              </thead>
-              <tbody>
-                {reviewData.map((item, index) => (
-                  <tr key={index} className="border-b">
-                    <td className="p-2 font-medium text-gray-700">{item.category}</td>
-                    <td className="p-2">
-                      <ul className="list-disc pl-5">
-                        {item.feedback.map((point, idx) => (
-                          <li key={idx}>{point}</li>
-                        ))}
-                      </ul>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ReviewMarkdown reviewData={reviewData} />
         )}
       </main>
     </div>
   )
 }
+
