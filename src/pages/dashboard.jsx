@@ -1,14 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
-export default function ResumeReviewer() {
+export default function Dashboard() {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadStatus, setUploadStatus] = useState(null);
   const [reviewData, setReviewData] = useState(null);
-  const token = localStorage.getItem('token');
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Reset error when component mounts or when file changes
+    setError(null);
+  }, [file]);
 
   const handleFileChange = (event) => {
     const selectedFile = event.target.files[0];
@@ -16,21 +21,30 @@ export default function ResumeReviewer() {
       setFile(selectedFile);
       setFileName(selectedFile.name);
     } else {
-      alert('Please upload a PDF file');
+      setError('Please upload a PDF file');
     }
   };
 
   const handleUpload = async () => {
     if (!file) {
-      alert('Please select a file to upload');
+      setError('Please select a file to upload');
       return;
     }
 
     setIsUploading(true);
+    setUploadStatus(null);
+    setReviewData(null);
+    setError(null);
+
     const formData = new FormData();
     formData.append('file', file);
 
     try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+
       const uploadResponse = await fetch(
         'https://adaptive-learning-v1.onrender.com/resume/resume_upload',
         {
@@ -64,11 +78,16 @@ export default function ResumeReviewer() {
       const reviewData = await reviewResponse.json();
       console.log('API Response:', reviewData); // Debug log
 
-      setReviewData(reviewData.answer); // Store the raw review data
-      setUploadStatus('completed');
+      if (Array.isArray(reviewData.answer)) {
+        setReviewData(reviewData.answer);
+        setUploadStatus('completed');
+      } else {
+        throw new Error('Invalid review data format');
+      }
     } catch (error) {
       console.error('Error:', error);
       setUploadStatus('error');
+      setError(error.message || 'An error occurred during the review process');
     } finally {
       setIsUploading(false);
     }
@@ -133,6 +152,14 @@ export default function ResumeReviewer() {
               </div>
             )}
           </div>
+          {error && (
+            <div className="mb-8 p-4 rounded-md bg-red-100">
+              <div className="flex items-center">
+                <AlertCircle className="h-5 w-5 text-red-400 mr-2" />
+                <span className="text-red-700">{error}</span>
+              </div>
+            </div>
+          )}
           {uploadStatus && (
             <div
               className={`mb-8 p-4 rounded-md ${
@@ -171,21 +198,16 @@ export default function ResumeReviewer() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reviewData.map((section, index) => {
-                    if (section.category && section.feedback) {
-                      return (
-                        <tr key={index}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                            {section.category}
-                          </td>
-                          <td className="px-6 py-4 text-sm text-gray-500">
-                            <ReactMarkdown>{section.feedback}</ReactMarkdown>
-                          </td>
-                        </tr>
-                      );
-                    }
-                    return null;
-                  })}
+                  {reviewData.map((section, index) => (
+                    <tr key={index}>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                        {section.category}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-gray-500">
+                        <ReactMarkdown>{section.feedback}</ReactMarkdown>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
             </div>
