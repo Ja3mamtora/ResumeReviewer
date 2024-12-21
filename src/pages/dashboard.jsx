@@ -53,6 +53,7 @@ export default function ResumeReviewer() {
           }
         );
         const resp = await data.json();
+        console.log(resp.answer);
         setReviewData(parseReviewData(resp.answer));
         setUploadStatus('completed');
       } else {
