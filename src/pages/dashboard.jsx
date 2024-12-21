@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react';
 
-export default function Dashboard() {
+export default function ResumeReviewer() {
   const [file, setFile] = useState(null);
   const [fileName, setFileName] = useState('');
   const [isUploading, setIsUploading] = useState(false);
@@ -53,8 +53,7 @@ export default function Dashboard() {
           }
         );
         const resp = await data.json();
-        const parsedData = parseReviewData(resp.answer);
-        setReviewData(parsedData);
+        setReviewData(parseReviewData(resp.answer));
         setUploadStatus('completed');
       } else {
         throw new Error('Upload failed');
@@ -69,38 +68,20 @@ export default function Dashboard() {
 
   const parseReviewData = (data) => {
     const lines = data.split('\n');
-    const result = [];
+    const result = {};
     let currentCategory = '';
-    let currentFeedback = [];
 
     lines.forEach((line) => {
-      if (line.startsWith('------------------------------------------')) {
-        if (currentCategory && currentFeedback.length > 0) {
-          result.push({
-            category: currentCategory,
-            feedback: currentFeedback.join('\n')
-          });
-          currentFeedback = [];
-        }
-      } else if (line.includes('|')) {
+      if (line.includes('|')) {
         const [category, feedback] = line.split('|').map(item => item.trim());
-        if (category && category !== 'Category') {
+        if (category && feedback) {
+          result[category] = feedback;
           currentCategory = category;
-          if (feedback) {
-            currentFeedback.push(feedback);
-          }
+        } else if (currentCategory) {
+          result[currentCategory] += '\n' + line.trim();
         }
-      } else if (line.trim()) {
-        currentFeedback.push(line.trim());
       }
     });
-
-    if (currentCategory && currentFeedback.length > 0) {
-      result.push({
-        category: currentCategory,
-        feedback: currentFeedback.join('\n')
-      });
-    }
 
     return result;
   };
@@ -188,37 +169,30 @@ export default function Dashboard() {
               )}
             </div>
           )}
-          {reviewData && reviewData.length > 0 && (
+          {reviewData && (
             <div className="bg-white shadow rounded-lg overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="bg-gray-50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                       Category
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200">
                       Feedback
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reviewData.map((item, index) => (
+                  {Object.entries(reviewData).map(([category, feedback], index) => (
                     <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.category}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                        {category}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
-                        {item.feedback.split('\n').map((line, i) => (
-                          <React.Fragment key={i}>
-                            {line.startsWith('•') ? (
-                              <div className="flex items-start mb-1">
-                                <span className="mr-2">•</span>
-                                <span>{line.substring(1).trim()}</span>
-                              </div>
-                            ) : (
-                              <div className="mb-1">{line}</div>
-                            )}
-                          </React.Fragment>
+                        {feedback.split('\n').map((item, i) => (
+                          <p key={i} className="mb-1">
+                            {item}
+                          </p>
                         ))}
                       </td>
                     </tr>
@@ -232,4 +206,3 @@ export default function Dashboard() {
     </div>
   );
 }
-
