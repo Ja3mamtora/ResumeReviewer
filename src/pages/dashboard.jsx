@@ -11,7 +11,6 @@ export default function Dashboard() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Reset error when component mounts or when file changes
     setError(null);
   }, [file]);
 
@@ -78,8 +77,20 @@ export default function Dashboard() {
       const reviewData = await reviewResponse.json();
       console.log('API Response:', reviewData); // Debug log
 
-      if (Array.isArray(reviewData.answer)) {
-        setReviewData(reviewData.answer);
+      if (reviewData && typeof reviewData === 'object') {
+        if (Array.isArray(reviewData.answer)) {
+          setReviewData(reviewData.answer);
+        } else if (typeof reviewData.answer === 'string') {
+          // If the answer is a string, we'll treat it as a single feedback item
+          setReviewData([{ category: 'General Feedback', feedback: reviewData.answer }]);
+        } else {
+          // If the structure is different, we'll try to extract useful information
+          const extractedData = Object.entries(reviewData).map(([key, value]) => ({
+            category: key,
+            feedback: typeof value === 'string' ? value : JSON.stringify(value)
+          }));
+          setReviewData(extractedData);
+        }
         setUploadStatus('completed');
       } else {
         throw new Error('Invalid review data format');
