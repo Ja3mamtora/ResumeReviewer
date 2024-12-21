@@ -92,6 +92,7 @@ export default function Dashboard() {
       }
 
       const data = await reviewResponse.json()
+      console.log(data.answer);
       const parsedData = parseReviewData(data.answer)
 
       if (parsedData.length === 0) {
