@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function ResumeReviewer() {
   const [file, setFile] = useState(null);
@@ -62,11 +63,8 @@ export default function ResumeReviewer() {
 
       const reviewData = await reviewResponse.json();
       console.log('API Response:', reviewData); // Debug log
-      
-      const parsedData = parseReviewData(reviewData.answer);
-      console.log('Parsed Data:', parsedData); // Debug log
-      
-      setReviewData(parsedData);
+
+      setReviewData(reviewData.answer); // Store the raw review data
       setUploadStatus('completed');
     } catch (error) {
       console.error('Error:', error);
@@ -74,42 +72,6 @@ export default function ResumeReviewer() {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const parseReviewData = (data) => {
-    // Split the data by the separator line
-    const sections = data.split('----------------------------------------------------------------------------------------------------------');
-    const result = [];
-    
-    // Process each section
-    sections.forEach(section => {
-      // Clean up the section and split by pipe
-      const lines = section.trim().split('\n');
-      
-      lines.forEach(line => {
-        if (line.includes('|')) {
-          const [category, feedback] = line.split('|').map(item => item.trim());
-          if (category && feedback) {
-            // Find existing category or create new one
-            let existingCategory = result.find(item => item.category === category);
-            if (!existingCategory) {
-              existingCategory = { category, feedback: [] };
-              result.push(existingCategory);
-            }
-            
-            // Add feedback if it's not empty
-            if (feedback !== 'Feedback') {
-              existingCategory.feedback.push(feedback);
-            }
-          }
-        } else if (line.trim().startsWith('*') && result.length > 0) {
-          // Add bullet points to the last category
-          result[result.length - 1].feedback.push(line.trim());
-        }
-      });
-    });
-
-    return result;
   };
 
   return (
@@ -209,27 +171,23 @@ export default function ResumeReviewer() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {reviewData.map((item, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
-                        {item.category}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-500">
-                        {item.feedback.map((feedbackItem, i) => (
-                          <div key={i} className="mb-2">
-                            {feedbackItem.startsWith('*') ? (
-                              <div className="flex">
-                                <span className="mr-2">•</span>
-                                <span>{feedbackItem.substring(1).trim()}</span>
-                              </div>
-                            ) : (
-                              feedbackItem
-                            )}
-                          </div>
-                        ))}
-                      </td>
-                    </tr>
-                  ))}
+                  {reviewData.split('----------------------------------------------------------------------------------------------------------').map((section, index) => {
+                    if (section.trim()) {
+                      const [category, ...feedbackLines] = section.split('\n').filter(line => line.trim());
+                      const feedback = feedbackLines.join('\n'); // Join multi-line feedback
+                      return (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                            {category.trim()}
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-500">
+                            <ReactMarkdown>{feedback}</ReactMarkdown> {/* Render the markdown here */}
+                          </td>
+                        </tr>
+                      );
+                    }
+                    return null;
+                  })}
                 </tbody>
               </table>
             </div>
@@ -239,4 +197,3 @@ export default function ResumeReviewer() {
     </div>
   );
 }
-
