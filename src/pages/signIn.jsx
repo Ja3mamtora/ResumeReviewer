@@ -23,6 +23,7 @@ export default function SignIn() {
 
       const response = await fetch('https://adaptive-learning-v1.onrender.com/authentication/login', {
         method: 'POST',
+        mode: 'cors',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
