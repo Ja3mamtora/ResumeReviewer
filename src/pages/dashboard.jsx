@@ -64,7 +64,7 @@ export default function ResumeReviewer() {
       const reviewData = await reviewResponse.json();
       console.log('API Response:', reviewData);
 
-      setReviewData(reviewData[0]); // Assuming the API returns an array with one object
+      setReviewData(reviewData.answer); // Assuming the API returns an array with one object
       setUploadStatus('completed');
     } catch (error) {
       console.error('Error:', error);
