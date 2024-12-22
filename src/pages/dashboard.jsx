@@ -31,7 +31,7 @@ export default function ResumeReviewer() {
 
     try {
       const uploadResponse = await fetch(
-        'https://adaptive-learning-v1.onrender.com/resume/resume_upload',
+        'https://adaptive-learning-v1.onrender.com/resume/resume_review',
         {
           method: 'POST',
           headers: {
@@ -45,26 +45,11 @@ export default function ResumeReviewer() {
         throw new Error('Upload failed');
       }
 
-      const reviewResponse = await fetch(
-        'https://adaptive-learning-v1.onrender.com/resume/resume_review',
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        }
-      );
-
-      if (!reviewResponse.ok) {
-        throw new Error('Review failed');
-      }
-
-      const reviewData = await reviewResponse.json();
+      const reviewData = await uploadResponse.json();
       console.log('API Response:', reviewData);
 
       // Parse the JSON string in reviewData.answer
-      const parsedReviewData = JSON.parse(reviewData.answer)[0];
+      const parsedReviewData = JSON.parse(reviewData.data)[0];
       setReviewData(parsedReviewData);
       setUploadStatus('completed');
     } catch (error) {
