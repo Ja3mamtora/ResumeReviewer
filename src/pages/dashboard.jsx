@@ -52,6 +52,7 @@ export default function ResumeReviewer() {
       const parsedReviewData = JSON.parse(reviewData.data)[0];
       setReviewData(parsedReviewData);
       setUploadStatus('completed');
+      setFile(null);
     } catch (error) {
       console.error('Error:', error);
       setUploadStatus('error');
