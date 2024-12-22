@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight, Star, XCircle, ArrowUpCircle, Briefcase, Link, ExternalLink } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
 
 export default function ResumeReviewer() {
   const [file, setFile] = useState(null);
@@ -64,7 +63,9 @@ export default function ResumeReviewer() {
       const reviewData = await reviewResponse.json();
       console.log('API Response:', reviewData);
 
-      setReviewData(reviewData.answer); // Assuming the API returns an array with one object
+      // Parse the JSON string in reviewData.answer
+      const parsedReviewData = JSON.parse(reviewData.answer)[0];
+      setReviewData(parsedReviewData);
       setUploadStatus('completed');
     } catch (error) {
       console.error('Error:', error);
@@ -165,7 +166,7 @@ export default function ResumeReviewer() {
                   <div className="flex items-center justify-center">
                     <Star className="h-8 w-8 text-yellow-400 mr-2" />
                     <h2 className="text-2xl font-semibold text-gray-900">
-                      Resume Score: {reviewData["Resume Score"] || "N/A"}
+                      Resume Score: {reviewData?.["Resume Score"] || "N/A"}
                     </h2>
                   </div>
                 </div>
@@ -180,7 +181,7 @@ export default function ResumeReviewer() {
                       Strong Parts of the Resume
                     </h3>
                     <ul className="list-disc pl-5 space-y-2">
-                      {reviewData["Strong Parts of the Resume"]?.map((item, index) => (
+                      {reviewData?.["Strong Parts of the Resume"]?.map((item, index) => (
                         <li key={index} className="text-sm text-gray-600">{item}</li>
                       )) || <li className="text-sm text-gray-600">No data available</li>}
                     </ul>
@@ -195,7 +196,7 @@ export default function ResumeReviewer() {
                       Weak Parts of the Resume
                     </h3>
                     <ul className="list-disc pl-5 space-y-2">
-                      {reviewData["Weak Parts of the Resume"]?.map((item, index) => (
+                      {reviewData?.["Weak Parts of the Resume"]?.map((item, index) => (
                         <li key={index} className="text-sm text-gray-600">{item}</li>
                       )) || <li className="text-sm text-gray-600">No data available</li>}
                     </ul>
@@ -210,7 +211,7 @@ export default function ResumeReviewer() {
                       Scope of Improvements
                     </h3>
                     <ul className="list-disc pl-5 space-y-2">
-                      {reviewData["Scope of Improvements"]?.map((item, index) => (
+                      {reviewData?.["Scope of Improvements"]?.map((item, index) => (
                         <li key={index} className="text-sm text-gray-600">{item}</li>
                       )) || <li className="text-sm text-gray-600">No data available</li>}
                     </ul>
@@ -225,7 +226,7 @@ export default function ResumeReviewer() {
                       Resume is Best Suited for Roles
                     </h3>
                     <ul className="list-disc pl-5 space-y-2">
-                      {reviewData["Resume is Best Suited for Roles"]?.map((item, index) => (
+                      {reviewData?.["Resume is Best Suited for Roles"]?.map((item, index) => (
                         <li key={index} className="text-sm text-gray-600">{item}</li>
                       )) || <li className="text-sm text-gray-600">No data available</li>}
                     </ul>
@@ -241,7 +242,7 @@ export default function ResumeReviewer() {
                     Useful Links
                   </h3>
                   <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                    {reviewData["Useful Links"]?.map((link, index) => (
+                    {reviewData?.["Useful Links"]?.map((link, index) => (
                       <li key={index}>
                         <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center">
                           {new URL(link).hostname}
@@ -257,7 +258,7 @@ export default function ResumeReviewer() {
               <div className="bg-white overflow-hidden shadow rounded-lg">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Instructions</h3>
-                  <p className="text-sm text-gray-600">{reviewData["Additional Instructions"] || "No additional instructions available"}</p>
+                  <p className="text-sm text-gray-600">{reviewData?.["Additional Instructions"] || "No additional instructions available"}</p>
                 </div>
               </div>
             </div>
