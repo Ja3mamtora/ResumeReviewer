@@ -4,6 +4,7 @@ import { AuthContext } from '../context/authContext';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Star, CheckCircle, XCircle, ArrowUpCircle, Briefcase, Link, Upload, FileText, Loader, ArrowRight, ExternalLink, AlertCircle } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -39,13 +40,17 @@ export default function Dashboard() {
         }
 
         const data = await response.json();
-        setResumeData(data[0]);
-        setLoading(false);
+        if (data && data[0]) {
+          setResumeData(data[0]);
+        } else {
+          console.error('Invalid data format received from API');
+          setError('Invalid data received. Please try again later.');
+        }
       } catch (error) {
         console.error('Error fetching resume data:', error);
         setError('Failed to load resume data. Please try again later.');
+      } finally {
         setLoading(false);
-        toast.error('Failed to load resume data');
       }
     };
 
@@ -115,8 +120,12 @@ export default function Dashboard() {
       }
 
       const data = await reviewResponse.json();
-      setResumeData(data[0]);
-      setUploadStatus('completed');
+      if (data && data[0]) {
+        setResumeData(data[0]);
+        setUploadStatus('completed');
+      } else {
+        throw new Error('Invalid data received from the server');
+      }
     } catch (error) {
       console.error('Error:', error);
       setUploadStatus('error');
@@ -130,14 +139,6 @@ export default function Dashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100">
         <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="text-red-500 text-xl">{error}</div>
       </div>
     );
   }
@@ -201,15 +202,17 @@ export default function Dashboard() {
             <p className="mt-2 text-red-600">Error uploading or reviewing resume. Please try again.</p>
           )}
         </div>
-        
-        {resumeData && (
+
+        {resumeData ? (
           <>
             {/* Resume Score */}
             <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
               <div className="px-4 py-5 sm:p-6">
                 <div className="flex items-center justify-center">
                   <Star className="h-8 w-8 text-yellow-400 mr-2" />
-                  <h2 className="text-2xl font-semibold text-gray-900">Resume Score: {resumeData["Resume Score"]}</h2>
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Resume Score: {resumeData["Resume Score"] || "N/A"}
+                  </h2>
                 </div>
               </div>
             </div>
@@ -223,9 +226,9 @@ export default function Dashboard() {
                     Strong Parts of the Resume
                   </h3>
                   <ul className="list-disc pl-5 space-y-2">
-                    {resumeData["Strong Parts of the Resume"].map((item, index) => (
+                    {resumeData["Strong Parts of the Resume"]?.map((item, index) => (
                       <li key={index} className="text-sm text-gray-600">{item}</li>
-                    ))}
+                    )) || <li className="text-sm text-gray-600">No data available</li>}
                   </ul>
                 </div>
               </div>
@@ -238,9 +241,9 @@ export default function Dashboard() {
                     Weak Parts of the Resume
                   </h3>
                   <ul className="list-disc pl-5 space-y-2">
-                    {resumeData["Weak Parts of the Resume"].map((item, index) => (
+                    {resumeData["Weak Parts of the Resume"]?.map((item, index) => (
                       <li key={index} className="text-sm text-gray-600">{item}</li>
-                    ))}
+                    )) || <li className="text-sm text-gray-600">No data available</li>}
                   </ul>
                 </div>
               </div>
@@ -253,9 +256,9 @@ export default function Dashboard() {
                     Scope of Improvements
                   </h3>
                   <ul className="list-disc pl-5 space-y-2">
-                    {resumeData["Scope of Improvements"].map((item, index) => (
+                    {resumeData["Scope of Improvements"]?.map((item, index) => (
                       <li key={index} className="text-sm text-gray-600">{item}</li>
-                    ))}
+                    )) || <li className="text-sm text-gray-600">No data available</li>}
                   </ul>
                 </div>
               </div>
@@ -268,9 +271,9 @@ export default function Dashboard() {
                     Resume is Best Suited for Roles
                   </h3>
                   <ul className="list-disc pl-5 space-y-2">
-                    {resumeData["Resume is Best Suited for Roles"].map((item, index) => (
+                    {resumeData["Resume is Best Suited for Roles"]?.map((item, index) => (
                       <li key={index} className="text-sm text-gray-600">{item}</li>
-                    ))}
+                    )) || <li className="text-sm text-gray-600">No data available</li>}
                   </ul>
                 </div>
               </div>
@@ -284,14 +287,14 @@ export default function Dashboard() {
                   Useful Links
                 </h3>
                 <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                  {resumeData["Useful Links"].map((link, index) => (
+                  {resumeData["Useful Links"]?.map((link, index) => (
                     <li key={index}>
                       <a href={link} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline flex items-center">
                         {new URL(link).hostname}
                         <ExternalLink className="h-4 w-4 ml-1" />
                       </a>
                     </li>
-                  ))}
+                  )) || <li className="text-sm text-gray-600">No links available</li>}
                 </ul>
               </div>
             </div>
@@ -300,10 +303,14 @@ export default function Dashboard() {
             <div className="mt-8 bg-white overflow-hidden shadow rounded-lg">
               <div className="px-4 py-5 sm:p-6">
                 <h3 className="text-lg font-medium text-gray-900 mb-4">Additional Instructions</h3>
-                <p className="text-sm text-gray-600">{resumeData["Additional Instructions"]}</p>
+                <p className="text-sm text-gray-600">{resumeData["Additional Instructions"] || "No additional instructions available"}</p>
               </div>
             </div>
           </>
+        ) : (
+          <div className="bg-white overflow-hidden shadow rounded-lg p-6">
+            <p className="text-lg text-gray-600">No resume data available. Please upload a resume to get started.</p>
+          </div>
         )}
       </div>
       <ToastContainer
