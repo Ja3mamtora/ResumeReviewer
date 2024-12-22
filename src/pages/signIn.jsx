@@ -12,6 +12,11 @@ export default function SignIn() {
   const [showPassword, setShowPassword] = useState(false);
   const [signInError, setSignInError] = useState(null);
   const { authState, login } = useContext(AuthContext);
+  let headers = new Headers();
+
+  headers.append('Content-Type', 'application/json');
+  headers.append('Accept', 'application/x-www-form-urlencoded');
+  headers.append('Origin','https://resume-reviewer-rouge.vercel.app');
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -24,9 +29,7 @@ export default function SignIn() {
       const response = await fetch('https://adaptive-learning-v1.onrender.com/authentication/login', {
         method: 'POST',
         mode: 'cors',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
+        headers: headers,
         body: formData.toString(),
       });
 
