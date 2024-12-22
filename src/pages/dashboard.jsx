@@ -1,25 +1,5 @@
 import React, { useState } from 'react'
-import ReactMarkdown from 'react-markdown'
-import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight } from 'lucide-react'
-
-function ReviewMarkdown({ reviewData }) {
-  const markdownContent = reviewData.map(item => {
-    const feedbackItems = item.feedback.map(point => `  • ${point}`).join('\n')
-    return `| ${item.category} | ${feedbackItems} |`
-  }).join('\n')
-
-  const fullMarkdown = `
-| Category | Feedback |
-|----------|----------|
-${markdownContent}
-  `
-
-  return (
-    <div className="bg-white shadow rounded-md p-6 overflow-x-auto">
-      <ReactMarkdown>{fullMarkdown}</ReactMarkdown>
-    </div>
-  )
-}
+import { Upload, FileText, CheckCircle, AlertCircle, Loader, ArrowRight, ExternalLink } from 'lucide-react'
 
 export default function Dashboard() {
   const [file, setFile] = useState(null)
@@ -44,23 +24,11 @@ export default function Dashboard() {
 
   const parseReviewData = (data) => {
     try {
-      const sections = {
-        "Resume Score": data.score ? [`${data.score}/100`] : [],
-        "Strong Parts of the Resume": data.strongParts || [],
-        "Weak Parts of the Resume": data.weakParts || [],
-        "Scope of Improvements": data.improvements || [],
-        "Resume is Best Suited for Roles": data.suitableRoles || [],
-        "Useful Links": data.usefulLinks || [],
-        "Additional Instructions": [data.additionalInstructions || ""]
-      }
-
-      return Object.entries(sections).map(([category, feedback]) => ({
-        category,
-        feedback: Array.isArray(feedback) ? feedback : [feedback]
-      }))
+      // The data is already in the correct format, so we just need to return it
+      return data[0]
     } catch (error) {
       console.error('Error parsing review data:', error)
-      return []
+      return null
     }
   }
 
@@ -117,7 +85,7 @@ export default function Dashboard() {
       const data = await reviewResponse.json()
       const parsedData = parseReviewData(data)
 
-      if (parsedData.length === 0) {
+      if (!parsedData) {
         throw new Error('Invalid review data format')
       }
 
@@ -131,6 +99,17 @@ export default function Dashboard() {
       setIsUploading(false)
     }
   }
+
+  const ReviewSection = ({ title, items, className = "" }) => (
+    <div className={`mb-6 ${className}`}>
+      <h2 className="text-xl font-semibold mb-2">{title}</h2>
+      <ul className="list-disc pl-5 space-y-1">
+        {items.map((item, index) => (
+          <li key={index} className="text-gray-700">{item}</li>
+        ))}
+      </ul>
+    </div>
+  )
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -222,8 +201,47 @@ export default function Dashboard() {
           </div>
         )}
 
-        {reviewData && reviewData.length > 0 && (
-          <ReviewMarkdown reviewData={reviewData} />
+        {reviewData && (
+          <div className="bg-white shadow rounded-lg p-6">
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Resume Score</h2>
+              <div className="mt-2 text-4xl font-bold text-blue-600">{reviewData["Resume Score"]}</div>
+            </div>
+
+            <ReviewSection title="Strong Parts of the Resume" items={reviewData["Strong Parts of the Resume"]} className="bg-green-50 p-4 rounded-md" />
+            <ReviewSection title="Weak Parts of the Resume" items={reviewData["Weak Parts of the Resume"]} className="bg-yellow-50 p-4 rounded-md" />
+            <ReviewSection title="Scope of Improvements" items={reviewData["Scope of Improvements"]} className="bg-blue-50 p-4 rounded-md" />
+
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Resume is Best Suited for Roles</h2>
+              <div className="flex flex-wrap gap-2">
+                {reviewData["Resume is Best Suited for Roles"].map((role, index) => (
+                  <span key={index} className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-sm">
+                    {role}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Useful Links</h2>
+              <ul className="space-y-1">
+                {reviewData["Useful Links"].map((link, index) => (
+                  <li key={index}>
+                    <a href={link} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center">
+                      {link}
+                      <ExternalLink className="ml-1 h-4 w-4" />
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-6 p-4 bg-gray-50 rounded-md">
+              <h2 className="text-xl font-semibold mb-2">Additional Instructions</h2>
+              <p className="text-gray-700">{reviewData["Additional Instructions"]}</p>
+            </div>
+          </div>
         )}
       </main>
     </div>
