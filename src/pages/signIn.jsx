@@ -139,8 +139,18 @@ export default function SignIn() {
             type="submit"
             className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out"
           >
-            {isSubmiting ? 'Signing In...' : 'Sign In'}
-            <ArrowRight className="ml-2 h-4 w-4" />
+            {isSubmiting ? (
+                      <>
+                        <Loader className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" />
+                        Signing in...
+                      </>
+                    ) : 
+              (
+              <>
+                Sign In <ArrowRight className="ml-2 h-4 w-4" /> 
+              </>
+              )}
+            
           </button>
         </form>
         {signInError && (
